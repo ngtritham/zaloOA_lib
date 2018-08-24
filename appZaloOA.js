@@ -986,24 +986,29 @@ class zaloOfficalAccount {
 			url_api = `${urlAPI}menu?access_token=${this.default_access_token}`
 		}
 
-		return new Promise(resolve => {
-			axios.post(`${url_api}`, {
-					offical_account_menu: buttons
-				})
-				.then(response => {
-					//console.log(response.status);
-					if (response.status == 200) {
-						//console.log(response.data)
-						resolve(response.data)
-					} else {
+		if(!validate.buttons(buttons)) {
+			return false
+		} else {
+			return new Promise(resolve => {
+				axios.post(`${url_api}`, {
+						offical_account_menu: buttons
+					})
+					.then(response => {
+						//console.log(response.status);
+						if (response.status == 200) {
+							//console.log(response.data)
+							resolve(response.data)
+						} else {
+							resolve(false)
+						}
+					})
+					.catch(error => {
+						console.error(error)
 						resolve(false)
-					}
-				})
-				.catch(error => {
-					console.error(error)
-					resolve(false)
-				})
-		})
+					})
+			})
+		}
+
 
 	}
 	// VI. Group
