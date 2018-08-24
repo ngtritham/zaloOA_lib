@@ -51,9 +51,9 @@ const link = {
 // Test methods:
 // I.
 //  1.
-// let data = ZaloOA.sendTextMessage(user_id, msg).then(result => {
-//     console.log(result);
-// })
+let data = ZaloOA.sendTextMessage(user_id, msg).then(result => {
+    console.log(result);
+})
 
 //  2.
 //   b.
