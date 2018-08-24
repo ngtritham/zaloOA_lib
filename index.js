@@ -5,9 +5,13 @@ const ZaloOA = new zaloOfficalAccount(token);
 // import {zaloOfficalAccount} from './appZaloOA'
 const user_id = '2258325342460503795'
 let tag = 'tagabcxyz'
-const msg = "Hello World! fsdfsdfsdf"
+const msg = "Hello World!"
 const img_url = "https://developers.zalo.me/web/static/zalo.png";
 const gif_url = "https://media.giphy.com/media/l0HlM2KvkLRU7Xfa0/giphy.gif";
+let title = "Title"
+let subtitle = "Subtitle"
+let image_url = "https://developers.zalo.me/web/static/zalo.png"
+let url = "https://developers.zalo.me/"
 
 const list = [{
         "title": "Zalo API Testing",
@@ -38,89 +42,134 @@ const list = [{
     }
 ]
 
-const link = {
-    "title": "Title",
-    "subtitle": "ZSL Test Message",
-    "image_url": "https://developers.zalo.me/web/static/zalo.png",
-    "default_action": {
-        "type": "oa.open.url",
-        "url": "https://developers.zalo.me/"
-    }
-}
+let data = null
 
 // Test methods:
 // I.
 //  1.
-let data = ZaloOA.sendTextMessage(user_id, msg).then(result => {
-    console.log(result);
-})
+//data = ZaloOA.sendTextMessage(user_id, msg)
 
 //  2.
-//   b.
-// let data = ZaloOA.sendSingleLinkMessage(user_id, link).then(result => {
+//   a.
+let img_element = [{
+    "media_type": "image",
+    "url": "https://developers.zalo.me/web/static/zalo.png"
+}]
+// data = ZaloOA.sendMediaMessage(user_id, msg, img_element).then(result => {
 //     console.log(result);
 // })
 
+//   b.
+
+data = ZaloOA.sendSingleLinkMessage(user_id, title, subtitle, img_url, url).then(result => {
+    console.log(result);
+})
+
 //   c.
-//let data = ZaloOA.sendMultiLinkMessage(token, user_id, list);
+//data = ZaloOA.sendMultiLinkMessage(user_id, list);
 
 //   d.
-let text = "Hello World!"
-let title = "OA chatbot (Testing)";
-let subtitle = "Đang yêu cầu thông tin từ bạn";
-let image_url = "https://developers.zalo.me/web/static/zalo.png"
-
-// let data = ZaloOA.sendUserRequestMessage(token, user_id, text, title, subtitle, image_url).then(result => console.log(result));
+//data = ZaloOA.sendUserRequestMessage(user_id, msg, title, subtitle, image_url).then(result => console.log(result));
 
 // ---------------------------
 // II.
 //  1.
-//let data = ZaloOA.getProfile(token, user_id).then(result => console.log(result));
+//data = ZaloOA.getProfile(user_id).then(result => console.log(result));
+
+//  2.
+//data = ZaloOA.getOA().then(result => console.log(result));
+
+//  3.
+//let data = ZaloOA.getFollowers().then(result => {
+//     console.log("errorMsg: ", result.errorMsg)
+//     let followers = result.data.followers
+//     console.log(followers)
+// });
+
+//  4.
+// data = ZaloOA.getRecentChatList().then(result => {
+//     console.log(result)
+// })
+
+//  5.
+// data =  ZaloOA.getConversation(user_id).then(result => {
+//     console.log(result)
+// })
 
 // ---------------------------
 // III.
 //  1.
-//let data = ZaloOA.getTagsOfOA(token).then(result => console.log(result));
+//data = ZaloOA.getTagsOfOA().then(result => console.log(result));
 
-//  2.resizeBy
-//let data = ZaloOA.setTagToFollower(token, tag, user_id).then(result => console.log(result));
+//  2.
+// data = ZaloOA.setTagToFollower(user_id, tag).then(result => console.log(result));
+
+//  3.
+// data = ZaloOA.removeFollowerFormTag(user_id, tag).then(result => console.log(result));
+
+//  4.
+//data = ZaloOA.removeTag(tag).then(result => console.log(result));
 
 // ---------------------------
 // IV.
 //  1.
-//let data = ZaloOA.registerIp(token, "10.30.30.30", "VNG");
+//data = ZaloOA.registerIp(token, "10.30.30.30", "VNG");
 //  2.
-// let data = ZaloOA.removeIp(token, "10.30.30.30", "VNG");
+//data = ZaloOA.removeIp(token, "10.30.30.30", "VNG");
 
 // ---------------------------
 // V.
-// let buttons = [{
-//         call_to_actions: [{
-//             title: "Menu",
-//             type: "oa.action.parent",
-//             call_to_actions: [{
-//                 title: "Liên hệ",
-//                 type: "oa.open.phone",
-//                 payload: "0123456789"
-//             }]
-//         }]
-//     },
-//     {
-//         call_to_actions: [{
-//             title: "Menu",
-//             type: "oa.action.parent",
-//             call_to_actions: [{
-//                     title: "Liên hệ",
-//                     type: "oa.open.phone",
-//                     payload: "0123456789"
-//                 },
-//                 {
-//                     title: "Đến shop",
-//                     type: "oa.open.url",
-//                     url: "https://developers.zalo.me/"
-//                 }
-//             ]
-//         }]
-//     }
-// ]
-// let data = ZaloOA.configureMenuOA(token, buttons);
+let buttons = [{
+        call_to_actions: [{
+            title: "Menu",
+            type: "oa.action.parent",
+            call_to_actions: [{
+                title: "Liên hệ",
+                type: "oa.open.phone",
+                payload: "0123456789"
+            }]
+        }]
+    },
+    {
+        call_to_actions: [{
+            title: "Menu",
+            type: "oa.action.parent",
+            call_to_actions: [{
+                    title: "Liên hệ",
+                    type: "oa.open.phone",
+                    payload: "0123456789"
+                },
+                {
+                    title: "Đến shop",
+                    type: "oa.open.url",
+                    url: "https://developers.zalo.me/"
+                }
+            ]
+        }]
+    },
+    {
+        call_to_actions: [{
+            title: "Menu",
+            type: "oa.action.parent",
+            call_to_actions: [{
+                    title: "Liên hệ",
+                    type: "oa.open.phone",
+                    payload: "0123456789"
+                },
+                {
+                    title: "Đến shop",
+                    type: "oa.open.url",
+                    url: "https://developers.zalo.me/"
+                },
+                {
+                    title: "Đến shop",
+                    type: "oa.open.url",
+                    url: "https://developers.zalo.me/"
+                }
+            ]
+        }]
+    }
+]
+// data = ZaloOA.configureMenuOA(buttons).then(result => {
+//     console.log(result);
+// })

@@ -24,6 +24,7 @@ const JSONbigString = require('json-bigint')({
 	"storeAsString": true
 })
 
+const validate = require('./validate');
 // // Config proxy
 // var isProxy = appConfig.isProxy;
 // var proxy = appConfig.proxy;
@@ -94,7 +95,7 @@ class zaloOfficalAccount {
 		let url_api = ``;
 
 		// Setup access_token
-		if (_.isString(access_token)) {
+		if (validate.accessToken(access_token)) {
 			url_api = `${urlAPI}message?access_token=${access_token}`
 		} else {
 			console.log("sendTextMessage: Invalid access_token !");
@@ -103,22 +104,20 @@ class zaloOfficalAccount {
 
 		console.log(url_api);
 		// Check user_id & text
-		if (_.isString(user_id) == false) {
-			console.log("user_id is not a string");
+		if (!validate.userId(user_id)) {
 			return false;
-		} else if (_.isString(text) == false) {
-			console.log("text is not a string");
+		} else if (!validate.text(text)) {
 			return false;
 		} else {
 			return new Promise(resolve => {
 				axios.post(url_api, {
-					recipient: {
-						user_id: user_id
-					},
-					message: {
-						text: text
-					}
-				})
+						recipient: {
+							user_id: user_id
+						},
+						message: {
+							text: text
+						}
+					})
 					.then(response => {
 						console.log(response.status);
 						if (response.status == 200) {
@@ -148,63 +147,79 @@ class zaloOfficalAccount {
 	/**
 	 *
 	 *
-	 * @param {string} [access_token='']
+	 * @param {string} [access_token=null]
 	 * @param {string} [user_id='']
 	 * @param {string} [text='']
-	 * @param {string} [url='']
+	 * @param {Object} elements
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	sendMediaMessage(access_token = '', user_id = '', text = '', url = '') {
+	sendMediaMessage(user_id = '', text = '', elements = [], access_token = null) {
 		console.log('sendMediaMessage')
 
 		let url_api = `${urlAPI}message?access_token=${access_token}`
 
-		let elements = new Array;
 		//console.log(url_api);
-		console.log(url);
-		let img_ext = url.split(".").slice(-1)[0]; // Get extention of image file
-		let media_type = '';
-		if (img_ext === "gif") {
-			media_type = "gif";
+		// let img_ext = url.split(".").slice(-1)[0]; // Get extention of image file
+		// let media_type = '';
+		// if (img_ext === "gif") {
+		// 	media_type = "gif";
+		// } else {
+		// 	media_type = "image"
+		// }
+
+		// Setup access_token
+		if (_.isString(access_token) && access_token.length > 0) {
+			url_api = `${urlAPI}message?access_token=${access_token}`
 		} else {
-			media_type = "image"
+			console.log("sendTextMessage: Invalid access_token !");
+			url_api = `${urlAPI}message?access_token=${this.default_access_token}`
 		}
 
-		console.log(img_ext);
-		return new Promise(resolve => {
-			axios.post(url_api, {
-				recipient: {
-					user_id: user_id
-				},
-				message: {
-					text: text,
-					attachment: {
-						type: "template",
-						payload: {
-							template_type: "media",
-							elements: [{
-								media_type: media_type,
-								url: url
-							}]
+		//Check user_id & text
+		if (_.isString(user_id) == false || _.isEmpty(user_id)) {
+			console.log("user_id is not a string or empty");
+			return false;
+		} else if (_.isString(text) == false || _.isEmpty(text)) {
+			console.log("text is not a string or empty");
+			return false;
+		} else if (_.isArray(elements) == false || _.isEmpty(elements)) {
+			console.log("elements is not an array or empty");
+			return false;
+		} else {
+			return new Promise(resolve => {
+				axios.post(url_api, {
+						recipient: {
+							user_id: user_id
+						},
+						message: {
+							text: text,
+							attachment: {
+								type: "template",
+								payload: {
+									template_type: "media",
+									elements: elements
+								}
+							}
 						}
-					}
-				}
-			})
-				.then(response => {
-					console.log(response.status);
-					if (response.status == 200) {
-						//console.log(response.data)
-						resolve(response.data)
-					} else {
+					})
+					.then(response => {
+						console.log(response.status);
+						if (response.status == 200) {
+							//console.log(response.data)
+							resolve(response.data)
+						} else {
+							resolve(false)
+						}
+					})
+					.catch(error => {
+						console.error(error)
 						resolve(false)
-					}
-				})
-				.catch(error => {
-					console.error(error)
-					resolve(false)
-				})
-		})
+					})
+			})
+		}
+
+
 	}
 
 	//    b. Send message with signle link attachment
@@ -214,47 +229,53 @@ class zaloOfficalAccount {
 	 *
 	 * @param {string} [access_token=null]
 	 * @param {string} [user_id='']
-	 * @param {Object} link
+	 * @param {string} [title='']
+	 * @param {string} [subtitle='']
+	 * @param {string} [image_url='']
+	 * @param {string} [url='']
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	sendSingleLinkMessage(user_id = '', link = {}, access_token = null) {
+	sendSingleLinkMessage(user_id = '', title = '', subtitle = '', image_url = '', url = '', access_token = null) {
 		console.log('sendSingleLinkMessage')
 
 		let url_api = ``;
 		// Setup access_token
-		if (_.isString(access_token)) {
+		if (validate.accessToken(access_token)) {
 			url_api = `${urlAPI}message?access_token=${access_token}`
 		} else {
-			console.log("sendSingleLinkMessage: Invalid access_token !");
 			url_api = `${urlAPI}message?access_token=${this.default_access_token}`
 		}
 
 		//console.log(url_api)
 
-		if (_.isString(user_id) == false) {
-			console.log("user_id is not a string");
-			return false;
-		} else if (_.isObject(link) == false) {
-			console.log("link is not an object");
-			return false;
+		if(!validate.singleLink(title, subtitle, image_url, url)) {
+			return false
 		} else {
-			let element = [link]
+			console.log(url_api);
 			return new Promise(resolve => {
 				axios.post(url_api, {
-					recipient: {
-						user_id: user_id
-					},
-					message: {
-						attachment: {
-							type: "template",
-							payload: {
-								template_type: "list",
-								elements: element
+						recipient: {
+							user_id: user_id
+						},
+						message: {
+							attachment: {
+								type: "template",
+								payload: {
+									template_type: "list",
+									elements: [{
+										title: title,
+										subtitle: subtitle,
+										image_url: image_url,
+										default_action: {
+											type: "oa.open.url",
+											url: url
+										}
+									}]
+								}
 							}
 						}
-					}
-				})
+					})
 					.then(response => {
 						console.log(response.status);
 						if (response.status == 200) {
@@ -292,40 +313,35 @@ class zaloOfficalAccount {
 
 		let url_api = ``;
 		// Setup access_token
-		if (_.isString(access_token)) {
+		if (validate.accessToken(access_token)) {
 			url_api = `${urlAPI}message?access_token=${access_token}`
 		} else {
-			console.log("sendMultiLinkMessage: Invalid access_token !");
+			//console.log("sendMultiLinkMessage: Invalid access_token !");
 			url_api = `${urlAPI}message?access_token=${this.default_access_token}`
 		}
 
 		//console.log(url_api)
 
-		if (_.isString(user_id) == false) {
-			console.log("user_id is not a string");
+		if (!validate.userId(user_id)) {
 			return false;
-		} else if (_.isArray(list_link) == false) {
-			console.log("list_link is not an array");
-			return false;
-		} else if (_.isEmpty(list_link) == false) {
-			console.log("list_link is empty");
+		} else if (!validate.multiLink(list_link)) {
 			return false;
 		} else {
 			return new Promise(resolve => {
 				axios.post(url_api, {
-					recipient: {
-						user_id: user_id
-					},
-					message: {
-						attachment: {
-							type: "template",
-							payload: {
-								template_type: "list",
-								elements: list_link
+						recipient: {
+							user_id: user_id
+						},
+						message: {
+							attachment: {
+								type: "template",
+								payload: {
+									template_type: "list",
+									elements: list_link
+								}
 							}
 						}
-					}
-				})
+					})
 					.then(response => {
 						console.log(response.status);
 						if (response.status == 200) {
@@ -349,7 +365,6 @@ class zaloOfficalAccount {
 	}
 
 	//    d. Send message with user request
-	// TODO: check input
 	/**
 	 *
 	 *
@@ -367,49 +382,35 @@ class zaloOfficalAccount {
 
 		let url_api = ``;
 		// Setup access_token
-		if (_.isString(access_token)) {
+		if (validate.accessToken(access_token)) {
 			url_api = `${urlAPI}message?access_token=${access_token}`
 		} else {
-			console.log("sendMultiLinkMessage: Invalid access_token !");
 			url_api = `${urlAPI}message?access_token=${this.default_access_token}`
 		}
 
-		if (_.isString(user_id) == false) {
-			console.log("user_id is not a string");
-			return false;
-		} else if (_.isString(text) == false) {
-			console.log("text is not a string");
-			return false;
-		} else if (_.isString(title) == false) {
-			console.log("title is not a string");
-			return false;
-		} else if (_.isString(subtitle) == false) {
-			console.log("subtitle is not a string");
-			return false;
-		} else if (is_url(image_url) == false) {
-			console.log("image_url is not a string");
-			return false;
+		if (!validate.userRequest(text, title, subtitle, image_url)) {
+			return false
 		} else {
 			return new Promise(resolve => {
 				axios.post(url_api, {
-					recipient: {
-						user_id: user_id
-					},
-					message: {
-						text: text,
-						attachment: {
-							type: "template",
-							payload: {
-								template_type: "request_user_info",
-								elements: [{
-									title: title,
-									subtitle: subtitle,
-									image_url: image_url
-								}]
+						recipient: {
+							user_id: user_id
+						},
+						message: {
+							text: text,
+							attachment: {
+								type: "template",
+								payload: {
+									template_type: "request_user_info",
+									elements: [{
+										title: title,
+										subtitle: subtitle,
+										image_url: image_url
+									}]
+								}
 							}
 						}
-					}
-				})
+					})
 					.then(response => {
 						console.log(response.status);
 						if (response.status == 200) {
@@ -452,25 +453,30 @@ class zaloOfficalAccount {
 
 		let url_api = `${urlAPI}getprofile`
 
-		if (_.isString(user_id) == false) {
-			console.log("user_id is not a string");
-			return false;
-		} else if (_.isString(access_token) == false) {
-			console.log("access_token is not a string");
+		let data_push = {
+			access_token: null,
+			data: {
+				user_id: null
+			}
+		}
+
+		if (validate.accessToken(access_token)) {
+			data_push.access_token = access_token
+		} else {
+			data_push.access_token = this.default_access_token
+		}
+
+
+		if (!validate.userId(user_id)) {
 			return false;
 		} else {
-			let data_push = {
-				access_token: access_token,
-				data: {
-					user_id: user_id
-				}
-			}
+			data_push.data.user_id = user_id
 
 			return new Promise(resolve => {
 				axios.get(`${url_api}`, {
-					params: data_push,
-					transformResponse: data => JSONbigString.parse(data)
-				})
+						params: data_push,
+						transformResponse: data => JSONbigString.parse(data)
+					})
 					.then(response => {
 						console.log(response.status);
 						if (response.status == 200) {
@@ -510,25 +516,21 @@ class zaloOfficalAccount {
 
 		let url_api = `${urlAPI}getoa`
 
-		let data_push = null
+		let data_push = {
+			access_token: null
+		}
 
-		if (_.isString(access_token) == false) {
-			console.log("access_token is not a string")
-
-			data_push = {
-				access_token: this.default_access_token
-			}
+		if (validate.accessToken(access_token)) {
+			data_push.access_token = access_token
 		} else {
-			data_push = {
-				access_token: access_token
-			}
+			data_push.access_token = this.default_access_token
 		}
 
 		return new Promise(resolve => {
 			axios.get(`${url_api}`, {
-				params: data_push,
-				transformResponse: data => JSONbigString.parse(data)
-			})
+					params: data_push,
+					transformResponse: data => JSONbigString.parse(data)
+				})
 				.then(response => {
 					if (response.status == 200) {
 						//console.log(response.data)
@@ -565,18 +567,24 @@ class zaloOfficalAccount {
 
 		let url_api = `${urlAPI}getfollowers`
 		let data_push = {
-			access_token: access_token,
+			access_token: null,
 			data: {
 				offset: offset,
 				count: count
 			}
 		}
 
+		if(validate.accessToken(access_token)) {
+			data_push.access_token = access_token
+		} else {
+			data_push.access_token = this.default_access_token
+		}
+
 		return new Promise(resolve => {
 			axios.get(`${url_api}`, {
-				params: data_push,
-				transformResponse: data => JSONbigString.parse(data)
-			})
+					params: data_push,
+					transformResponse: data => JSONbigString.parse(data)
+				})
 				.then(response => {
 					if (response.status == 200) {
 						resolve(response.data)
@@ -602,23 +610,30 @@ class zaloOfficalAccount {
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	getListRecentChat(access_token = '', offset = 0, count = 10) {
+	getRecentChatList(offset = 0, count = 10, access_token = null) {
 		console.log('getListRecentChat')
 
 		let url_api = `${urlAPI}listrecentchat`
+
 		let data_push = {
-			access_token: access_token,
+			access_token: null,
 			data: {
 				offset: offset,
 				count: count
 			}
 		}
 
+		if(validate.accessToken(access_token)) {
+			data_push.access_token = access_token
+		} else {
+			data_push.access_token = this.default_access_token
+		}
+
 		return new Promise(resolve => {
 			axios.get(`${url_api}`, {
-				params: data_push,
-				transformResponse: data => JSONbigString.parse(data)
-			})
+					params: data_push,
+					transformResponse: data => JSONbigString.parse(data)
+				})
 				.then(response => {
 					if (response.status == 200) {
 						resolve(response.data)
@@ -634,48 +649,45 @@ class zaloOfficalAccount {
 	}
 
 	// 5. Get conversation with followers
-	// FIXME: { errorCode: -201, errorMsg: 'user_id is invalid' }
 
 	/**
 	 *
 	 *
-	 * @param {string} [accessToken='']
+	 * @param {string} [accessToken=null]
 	 * @param {string} [user_id='']
 	 * @param {number} [offset=0]
 	 * @param {number} [count=10]
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	getConversation(access_token = '', user_id = '', offset = 0, count = 10) {
+	getConversation(user_id = '', offset = 0, count = 10, access_token = null) {
 		console.log('getConversation')
 
-		let url_api = `${urlAPI}conversation`
-		let data_push = {
-			access_token: access_token,
-			data: {
-				user_id: user_id,
-				offset: offset,
-				count: count
-			}
+		if(!validate.accessToken(access_token)) {
+			access_token = this.default_access_token
 		}
 
-		return new Promise(resolve => {
-			axios.get(`${url_api}`, {
-				params: data_push,
-				transformResponse: data => JSONbigString.parse(data)
-			})
-				.then(response => {
-					if (response.status == 200) {
-						resolve(response.data)
-					} else {
+		if (!validate.userId(user_id)) {
+			return false;
+		} else {
+			let url_api = `${urlAPI}conversation?access_token=${access_token}&data={"user_id"=${user_id},"offset"=${offset},"count"=${count}}`
+			return new Promise(resolve => {
+				axios.get(`${url_api}`)
+					.then(response => {
+						if (response.status == 200) {
+							resolve(response.data)
+						} else {
+							resolve(false)
+						}
+					})
+					.catch(error => {
+						console.error(error)
 						resolve(false)
-					}
-				})
-				.catch(error => {
-					console.error(error)
-					resolve(false)
-				})
-		})
+					})
+			})
+		}
+
+
 	}
 
 	// III. Tags
@@ -683,23 +695,29 @@ class zaloOfficalAccount {
 	/**
 	 *
 	 *
-	 * @param {string} [access_token='']
+	 * @param {string} [access_token=null]
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	getTagsOfOA(access_token = '') {
+	getTagsOfOA(access_token = null) {
 		console.log('getTagsOfOA')
 
 		let url_api = `${urlAPI}tag/gettagsofoa`
 		let data_push = {
-			access_token: access_token
+			access_token: null
+		}
+
+		if(validate.accessToken(access_token)) {
+			data_push.access_token = access_token
+		} else {
+			data_push.access_token = this.default_access_token
 		}
 
 		return new Promise(resolve => {
 			axios.get(`${url_api}`, {
-				params: data_push,
-				transformResponse: data => JSONbigString.parse(data)
-			})
+					params: data_push,
+					transformResponse: data => JSONbigString.parse(data)
+				})
 				.then(response => {
 					console.log(response.status);
 					if (response.status == 200) {
@@ -716,45 +734,56 @@ class zaloOfficalAccount {
 	}
 
 	// 2. Set tag to follower
-	// FIXME: Test lại
+
 	/**
 	 *
 	 *
-	 * @param {string} [access_token='']
+	 * @param {string} [access_token=null]
 	 * @param {string} [user_id='']
 	 * @param {string} [tag_name='']
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	setTagToFollower(access_token = '', tag_name = '', user_id = '') {
+	setTagToFollower(user_id = '', tag_name = '', access_token = null) {
 		console.log('setTagToFollower')
 
-		let url_api = `${urlAPI}tag/tagfollower?access_token=${access_token}`
-		let data_push = JSON.stringify({
-			user_id: user_id,
-			tag_name: tag_name
-		})
+		let url_api = null
 
-		console.log(url_api);
-		return new Promise(resolve => {
-			axios.post(url_api, {
+		// Setup access_token
+		if (validate.accessToken(access_token)) {
+			url_api = `${urlAPI}tag/tagfollower?access_token=${access_token}`
+		} else {
+			url_api = `${urlAPI}tag/tagfollower?access_token=${this.default_access_token}`
+		}
+
+		if (!validate.userId(user_id)) {
+			return false
+		} else if (!validate.text(tag_name)) {
+			return false
+		} else {
+			let data_push = {
 				user_id: user_id,
 				tag_name: tag_name
-			})
-				.then(response => {
-					console.log(response.status);
-					if (response.status == 200) {
-						//console.log(response.data)
-						resolve(response.data)
-					} else {
+			}
+
+			return new Promise(resolve => {
+				axios.post(`${url_api}`, data_push)
+					.then(response => {
+						console.log(response.status);
+						if (response.status == 200) {
+							//console.log(response.data)
+							resolve(response.data)
+						} else {
+							resolve(false)
+						}
+					})
+					.catch(error => {
+						console.error(error)
 						resolve(false)
-					}
-				})
-				.catch(error => {
-					console.error(error)
-					resolve(false)
-				})
-		})
+					})
+			})
+		}
+
 	}
 
 	// 3. Remove follower form tag
@@ -762,37 +791,50 @@ class zaloOfficalAccount {
 	/**
 	 *
 	 *
-	 * @param {string} [access_token='']
+	 * @param {string} [access_token=null]
 	 * @param {string} [user_id='']
 	 * @param {string} [tag_name='']
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	removeFollowerFormTag(access_token = '', tag_name = '', user_id = '') {
+	removeFollowerFormTag(user_id = '', tag_name = '', access_token = null) {
 		console.log('removeFollowerFormTag')
 
-		let url_api = `${urlAPI}tag/rmfollowerfromtag?access_token=${access_token}`
+		let url_api = null
 
-		console.log(url_api);
-		return new Promise(resolve => {
-			axios.post(url_api, {
-				user_id: user_id,
-				tag_name: tag_name
-			})
-				.then(response => {
-					console.log(response.status);
-					if (response.status == 200) {
-						//console.log(response.data)
-						resolve(response.data)
-					} else {
+		// Setup access_token
+		if (validate.accessToken(access_token)) {
+			url_api = `${urlAPI}tag/rmfollowerfromtag?access_token=${access_token}`
+		} else {
+			url_api = `${urlAPI}tag/rmfollowerfromtag?access_token=${this.default_access_token}`
+		}
+
+		if (!validate.userId(user_id)) {
+			return false
+		} else if (!validate.text(tag_name)) {
+			return false
+		} else {
+			return new Promise(resolve => {
+				axios.post(`${url_api}`, {
+						user_id: user_id,
+						tag_name: tag_name
+					})
+					.then(response => {
+						console.log(response.status);
+						if (response.status == 200) {
+							resolve(response.data)
+						} else {
+							resolve(false)
+						}
+					})
+					.catch(error => {
+						console.error(error)
 						resolve(false)
-					}
-				})
-				.catch(error => {
-					console.error(error)
-					resolve(false)
-				})
-		})
+					})
+			})
+		}
+
+
 	}
 
 	// 4. Remove tag
@@ -800,35 +842,46 @@ class zaloOfficalAccount {
 	/**
 	 *
 	 *
-	 * @param {string} [access_token='']
+	 * @param {string} [access_token=null]
 	 * @param {string} [tag_name='']
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	removeTag(access_token = '', tag_name = '') {
+	removeTag(tag_name = '', access_token = null) {
 		console.log('removeTag')
 
-		let url_api = `${urlAPI}tag/rmtag?access_token=${access_token}`
+		let url_api = null
 
-		console.log(url_api);
-		return new Promise(resolve => {
-			axios.post(url_api, {
-				tag_name: tag_name
-			})
-				.then(response => {
-					console.log(response.status);
-					if (response.status == 200) {
-						//console.log(response.data)
-						resolve(response.data)
-					} else {
+		// Setup access_token
+		if (validate.accessToken(access_token)) {
+			url_api = `${urlAPI}tag/rmtag?access_token=${access_token}`
+		} else {
+			url_api = `${urlAPI}tag/rmtag?access_token=${this.default_access_token}`
+		}
+
+		if(!validate.text(tag_name)) {
+			return false
+		} else {
+			return new Promise(resolve => {
+				axios.post(`${url_api}`, {
+						tag_name: tag_name
+					})
+					.then(response => {
+						console.log(response.status);
+						if (response.status == 200) {
+							//console.log(response.data)
+							resolve(response.data)
+						} else {
+							resolve(false)
+						}
+					})
+					.catch(error => {
+						console.error(error)
 						resolve(false)
-					}
-				})
-				.catch(error => {
-					console.error(error)
-					resolve(false)
-				})
-		})
+					})
+			})
+		}
+
 	}
 
 
@@ -853,9 +906,9 @@ class zaloOfficalAccount {
 		console.log(url_api);
 		return new Promise(resolve => {
 			axios.post(url_api, {
-				ip: ip,
-				name: name
-			})
+					ip: ip,
+					name: name
+				})
 				.then(response => {
 					console.log(response.status);
 					if (response.status == 200) {
@@ -891,9 +944,9 @@ class zaloOfficalAccount {
 		console.log(url_api);
 		return new Promise(resolve => {
 			axios.post(url_api, {
-				ip: ip,
-				name: name
-			})
+					ip: ip,
+					name: name
+				})
 				.then(response => {
 					console.log(response.status);
 					if (response.status == 200) {
@@ -915,24 +968,30 @@ class zaloOfficalAccount {
 	/**
 	 *
 	 *
-	 * @param {string} [access_token='']
+	 * @param {string} [access_token=null]
 	 * @param {Object[]} buttons
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
 
-	configureMenuOA(access_token = '', buttons = []) {
+	configureMenuOA(buttons = [], access_token = null) {
 		console.log('configureMenuOA')
 
-		let url_api = `${urlAPI}menu?access_token=${access_token}`
+		let url_api = null
 
-		console.log(url_api)
+		// Setup access_token
+		if (validate.accessToken(access_token)) {
+			url_api = `${urlAPI}menu?access_token=${access_token}`
+		} else {
+			url_api = `${urlAPI}menu?access_token=${this.default_access_token}`
+		}
+
 		return new Promise(resolve => {
-			axios.post(url_api, {
-				offical_account_menu: buttons
-			})
+			axios.post(`${url_api}`, {
+					offical_account_menu: buttons
+				})
 				.then(response => {
-					console.log(response.status);
+					//console.log(response.status);
 					if (response.status == 200) {
 						//console.log(response.data)
 						resolve(response.data)
@@ -967,9 +1026,9 @@ class zaloOfficalAccount {
 
 		return new Promise(resolve => {
 			axios.get(`${url_api}`, {
-				params: data_push,
-				transformResponse: data => JSONbigString.parse(data)
-			})
+					params: data_push,
+					transformResponse: data => JSONbigString.parse(data)
+				})
 				.then(response => {
 					if (response.status == 200) {
 						resolve(response.data)
@@ -1007,9 +1066,9 @@ class zaloOfficalAccount {
 
 		return new Promise(resolve => {
 			axios.get(`${url_api}`, {
-				params: data_push,
-				transformResponse: data => JSONbigString.parse(data)
-			})
+					params: data_push,
+					transformResponse: data => JSONbigString.parse(data)
+				})
 				.then(response => {
 					if (response.status == 200) {
 						resolve(response.data)
@@ -1043,9 +1102,9 @@ class zaloOfficalAccount {
 		console.log(url_api);
 		return new Promise(resolve => {
 			axios.post(url_api, {
-				user_id: user_id,
-				tag_name: tag_name
-			})
+					user_id: user_id,
+					tag_name: tag_name
+				})
 				.then(response => {
 					console.log(response.status);
 					if (response.status == 200) {
