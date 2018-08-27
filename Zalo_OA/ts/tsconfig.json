@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "target": "es6",
+        "watch": true,
+        "removeComments": false,
+        "outDir": "compiled"
+    },
+    "files": [
+        "appZaloOA.ts",
+        "index.ts",
+        "validate.ts"
+    ]
+}
