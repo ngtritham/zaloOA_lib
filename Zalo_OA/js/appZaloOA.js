@@ -15,7 +15,6 @@ const hash256 = crypto.createHash('sha256')
 const axios = require('axios')
 const moment = require('moment')
 const _ = require('lodash')
-const is_url = require('is-url');
 const JSONbig = require('json-bigint')
 const JSONstrict = require('json-bigint')({
 	"strict": true
@@ -177,15 +176,13 @@ class zaloOfficalAccount {
 		}
 
 		//Check user_id & text
-		if (_.isString(user_id) == false || _.isEmpty(user_id)) {
-			console.log("user_id is not a string or empty");
+		if (!validate.userId(user_id)) {
 			return false;
-		} else if (_.isString(text) == false || _.isEmpty(text)) {
-			console.log("text is not a string or empty");
+		} else if (validate.text(text)) {
 			return false;
 		} else if (_.isArray(elements) == false || _.isEmpty(elements)) {
 			console.log("elements is not an array or empty");
-			return false;
+			return Promise.reject(new Error());
 		} else {
 			return new Promise(resolve => {
 				axios.post(url_api, {
@@ -431,10 +428,6 @@ class zaloOfficalAccount {
 					})
 			})
 		}
-
-
-
-
 	}
 
 	// II. Get information
@@ -686,8 +679,6 @@ class zaloOfficalAccount {
 					})
 			})
 		}
-
-
 	}
 
 	// III. Tags
@@ -892,13 +883,13 @@ class zaloOfficalAccount {
 	/**
 	 *
 	 *
-	 * @param {string} [access_token='']
+	 * @param {string} [access_token=null]
 	 * @param {string} [ip='']
 	 * @param {string} [name='']
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	registerIp(access_token = '', ip = '', name = '') {
+	registerIp(ip = '', name = '', access_token = null) {
 		console.log('registerIp')
 
 		let url_api = `${urlAPI}registerip?access_token=${access_token}`
@@ -930,13 +921,13 @@ class zaloOfficalAccount {
 	/**
 	 *
 	 *
-	 * @param {string} [access_token='']
+	 * @param {string} [access_token=null]
 	 * @param {string} [ip='']
 	 * @param {string} [name='']
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	removeIp(access_token = '', ip = '', name = '') {
+	removeIp(ip = '', name = '', access_token = null) {
 		console.log('registerIp')
 
 		let url_api = `${urlAPI}removeip?access_token=${access_token}`
@@ -1021,7 +1012,7 @@ class zaloOfficalAccount {
 	 * @returns
 	 * @memberof zaloOfficalAccount
 	 */
-	getGroupsOfOA(access_token = '') {
+	getGroupsOfOA(access_token = null) {
 		console.log('getGroupsOfOA')
 
 		let url_api = `${urlAPI}group/getgroupsofoa`

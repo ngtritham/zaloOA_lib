@@ -17,5 +17,8 @@
     "lodash": "^4.17.10",
     "moment": "^2.22.2",
     "validator": "^10.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^10.9.2"
   }
 }
